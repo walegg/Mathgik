@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     
+    @FocusState private var answerIsFocused: Bool
+    
     @State private var gameStart = false
     
     @State private var tables = 2
@@ -18,7 +20,6 @@ struct ContentView: View {
     
     @State private var userAnswer = 0
     
-    @State private var scoreTitle = ""
     @State private var currentScore = 0
     @State private var showingScore = false
     
@@ -39,16 +40,19 @@ struct ContentView: View {
         ZStack {
             Color.green
                 .ignoresSafeArea()
-            VStack {
-                Text("🪄Mathgik🪄")
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .font(.largeTitle)
-                
-                Text("Kids game to learn tables")
-            }
+            
             
             VStack {
+                VStack {
+                    Text("🪄Mathgik🪄")
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .font(.largeTitle)
+                    
+                    Text("Kids game to learn tables")
+                }
+                //.padding(.vertical, 30)
+                
                 VStack {
                     Section {
                         Stepper("Select a multiplication table", value: $tables, in: 2...12, step: 1)
@@ -107,19 +111,6 @@ struct ContentView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .padding(.horizontal, 20)
                 
-                Spacer()
-                
-                VStack {
-                    Section {
-                        Text("Question \(currentQuestion)/\(questions)")
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding(.horizontal, 100)
-                
                 VStack {
                     Section {
                         if easyMode {
@@ -140,6 +131,14 @@ struct ContentView: View {
                         TextField("Answer", value: $userAnswer, format: .number)
                             .keyboardType(.decimalPad)
                             .padding(.horizontal, 125)
+                            .focused($answerIsFocused)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Button("Done") {
+                                        answerIsFocused = false
+                                    }
+                                }
+                            }
                         Button("Validate") {
                             if easyMode {
                                 easyModeNextQuestion()
@@ -166,28 +165,29 @@ struct ContentView: View {
                 .padding(.vertical, 20)
                 .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 50)
                 
                 VStack {
                     Section {
+                        Text("Question \(currentQuestion)/\(questions)")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20)
+                    .background(.regularMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.horizontal, 120)
+                    
+                    Section {
                         Text("Score: \(currentScore)")
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20)
+                    .background(.regularMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(.horizontal, 130)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding(.horizontal, 100)
+                
             }
-            .navigationTitle("Mathgik")
-        }
-        .alert(scoreTitle, isPresented: $showingScore) {
-            Button("End", action: restartGame)
-        } message: {
-            Text("Your final score is \(currentScore)")
-        }
-        .alert(scoreTitle, isPresented: $showingScore) {
-            Button("Restart", action: newGame)
         }
     }
     
@@ -273,7 +273,6 @@ struct ContentView: View {
     
     func restartGame() {
         if currentQuestion == questions {
-            scoreTitle = "No more questions"
             resetGame = true
         }
     }
